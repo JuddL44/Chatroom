@@ -1,0 +1,17 @@
+@if (signedIn) {
+  <h1>Hi you!</h1>
+  <h2>You are currently logged in.</h2>
+  <p></p>
+  <button (click)="Logout()">Log out</button>
+} @else {
+  <h1>Username</h1>
+  <input #username type="text" />
+  <p></p>
+  <h1>Password</h1>
+  <input #password type="text" />
+  <p></p>
+  <button (click)="Login(username.value, password.value)">Log In</button>
+  <div style="color: red">{{ errorMessage }}</div>
+  <p></p>
+  <button (click)="Register(username.value, password.value)">Register</button>
+}

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,7 @@ public class AuthController : ControllerBase
         _mediator = mediator;
     }
 
+    [EnableCors("AllowFrontend")]
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterUserCommand command)
     {
@@ -25,7 +27,7 @@ public class AuthController : ControllerBase
         return Ok(new { id });
     }
 
-
+    [EnableCors("AllowFrontend")]
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginUserCommand command)
     {
