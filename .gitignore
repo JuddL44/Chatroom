@@ -1,0 +1,75 @@
+########################################
+# .NET / WebAPI
+########################################
+
+# Build outputs
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS / VS Code
+.vs/
+.vscode/
+.idea/
+
+# ASP.NET Core
+appsettings.Development.json
+appsettings.Production.json
+
+# Logs
+*.log
+
+# Secret files
+secrets.json
+*.Secrets.*
+
+# EF Core
+Migrations/*Designer.cs
+
+########################################
+# Node / Angular
+########################################
+
+# Dependencies
+node_modules/
+
+# Angular build output
+dist/
+out-tsc/
+build/
+
+# Angular / environment files (IMPORTANT)
+src/environments/environment*.ts
+
+# Angular cache
+.angular/
+.cache/
+
+# npm / yarn / pnpm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Angular / coverage
+coverage/
+
+########################################
+# Misc OS junk
+########################################
+
+.DS_Store
+Thumbs.db
+
+########################################
+# dotenv / env files
+########################################
+
+.env
+.env.*
