@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "LwbTwpSTcmI=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\lasat\\OneDrive\\Desktop\\projects\\Chatroom\\ChatroomAPI\\ChatroomAPI.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\lasat\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.9\\microsoft.aspnetcore.openapi.9.0.9.nupkg.sha512",
+    "C:\\Users\\lasat\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
