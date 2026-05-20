@@ -3,6 +3,23 @@
   <h2>You are currently logged in.</h2>
   <p></p>
   <button (click)="Logout()">Log out</button>
+  <p></p>
+  <h3>Conversation Creator</h3>
+  <p></p>
+  <input #convoadd type="text" />
+  <p></p>
+  <button (click)="CreateConversation(convoadd.value)">Create Conversation</button>
+  <p></p>
+  @for (conversation of conversations; track conversation.id) {
+    <h1>{{ conversation.lastMessage }}</h1>
+    <h1>{{ conversation.lastSender }}</h1>
+    <h1>{{ conversation.id }}</h1>
+    <button (click)="LeaveConversation(conversation.id)">Leave Conversation</button>
+    <button (click)="DeleteConversation(conversation.id)">Delete Conversation</button>
+    <p></p>
+    <p></p>
+    <p></p>
+  }
 } @else {
   <h1>Username</h1>
   <input #username type="text" />
