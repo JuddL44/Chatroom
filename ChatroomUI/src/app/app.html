@@ -16,9 +16,15 @@
     <h1>{{ conversation.id }}</h1>
     <button (click)="LeaveConversation(conversation.id)">Leave Conversation</button>
     <button (click)="DeleteConversation(conversation.id)">Delete Conversation</button>
-    <p></p>
-    <p></p>
-    <p></p>
+    <h1>Messages</h1>
+    @for (message of messagesMap.get(conversation.id); track $index) {
+      <h4>{{ message.senderName }}</h4>
+      <h5>{{ message.sentAt }}</h5>
+      <h6>{{ message.content }}</h6>
+      <p></p>
+    }
+    <input #createmsg type="text" />
+    <button (click)="CreateMessage(conversation.id, createmsg.value)">Send Message</button>
   }
 } @else {
   <h1>Username</h1>

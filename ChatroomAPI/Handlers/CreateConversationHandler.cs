@@ -28,10 +28,12 @@ public class CreateConversationHandler : IRequestHandler<CreateConversationComma
             UserId = req.CreatorId
         });
 
+        var addedParticipant = await _context.Users.FirstOrDefaultAsync(u => u.Username == req.TargetUsername);
+        if (addedParticipant == null) { return Guid.Empty; }
         _context.ConversationParticipants.Add(new ConversationParticipant
         {
             Conversationid = conversation.Id,
-            UserId = req.TargetUserId
+            UserId = addedParticipant.Id
         });
 
         await _context.SaveChangesAsync(ct);

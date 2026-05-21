@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ConversationDTO } from '../Models/Conversation';
+import { MessageDTO } from '../Models/Message';
 
 @Injectable({
   providedIn: 'root',
@@ -39,11 +40,26 @@ export class ApiService {
     });
   }
 
-  createConversation(targetUserId: string): Observable<string> {
+  getMessages(convoId: string): Observable<MessageDTO[]> {
+    return this.http.get<MessageDTO[]>(`${this.APIURL}/chat/${convoId}/messages`, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  createConversation(targetUsername: string): Observable<string> {
     const headers = this.getAuthHeaders();
     return this.http.post<string>(
       `${this.APIURL}/chat/conversation`,
-      { targetUserId },
+      { targetUsername },
+      { headers },
+    );
+  }
+
+  createMessage(convoId: string, message: string): Observable<string> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<string>(
+      `${this.APIURL}/chat/${convoId}/message`,
+      { message },
       { headers },
     );
   }

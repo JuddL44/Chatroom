@@ -57,5 +57,23 @@ public class ChatController : ControllerBase
         await _mediator.Send(new DeleteConversationCommand(convoId, userGuid));
         return NoContent();
     }
+
+    [Authorize]
+    [HttpPost("{convoId}/message")]
+    public async Task<IActionResult> CreateMessage(Guid convoId, [FromBody] CreateMessageRequest request)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        Guid userGuid = new Guid(userId!);
+        var result = await _mediator.Send(new CreateMessageCommand(userGuid, convoId, request.Message, false));
+        return Ok(result);
+    }
+
+    [Authorize]
+    [HttpGet("{convoId}/messages")]
+    public async Task<IActionResult> GetMessages(Guid convoId)
+    {
+        var result = await _mediator.Send(new GetConversationMessagesQuery(convoId));
+        return Ok(result);
+    }
     
 }

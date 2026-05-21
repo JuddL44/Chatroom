@@ -4,6 +4,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ConversationDTO } from './Models/Conversation';
 import { ApiService } from './Services/api';
+import { firstValueFrom, forkJoin } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { MessageDTO } from './Models/Message';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +23,7 @@ export class App implements OnInit {
   public errorMessage: string = '';
   public conversations: ConversationDTO[] = [];
 
+  messagesMap = new Map<string, MessageDTO[]>();
   constructor(private apiService: ApiService) {}
 
   ngOnInit() {
@@ -86,12 +90,26 @@ export class App implements OnInit {
       next: (data: ConversationDTO[]) => {
         console.log('Conversations loaded: ', data);
         this.conversations = data;
+        this.loadAllMessages(this.conversations);
       },
       error: (error) => {
         console.error('Failed to load conversations: ', error);
         this.errorMessage = 'Could not load conversations';
       },
     });
+  }
+
+  loadAllMessages(conversations: ConversationDTO[]) {
+    const requests = conversations.map((convo) =>
+      this.apiService
+        .getMessages(convo.id)
+        .pipe(tap((messages) => this.messagesMap.set(convo.id, messages))),
+    );
+    forkJoin(requests).subscribe();
+  }
+
+  CreateMessage(convoId: string, message: string) {
+    this.apiService.createMessage(convoId, message).subscribe();
   }
 
   CreateConversation(targetUserId: string) {
