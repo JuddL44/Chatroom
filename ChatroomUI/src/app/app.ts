@@ -4,9 +4,11 @@ import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ConversationDTO } from './Models/Conversation';
 import { ApiService } from './Services/api';
+import { ChatHubService } from './Services/chat-hub';
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { MessageDTO } from './Models/Message';
+import { ConversationUpdate } from './Models/ConversationUpdate';
 
 @Component({
   selector: 'app-root',
@@ -24,18 +26,50 @@ export class App implements OnInit {
   public conversations: ConversationDTO[] = [];
 
   messagesMap = new Map<string, MessageDTO[]>();
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private chatHub: ChatHubService,
+  ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     const token = localStorage.getItem('auth_token');
     if (token) {
-      this.signedIn = true;
-      console.log('User is already logged in (token exists)');
-      this.loadConversations();
+      try {
+        await this.chatHub.startConnection(token);
+
+        console.log('SignalR connected');
+
+        this.signedIn = true;
+
+        this.loadConversations();
+      } catch (err) {
+        console.error(err);
+      }
     } else {
       this.signedIn = false;
       console.log('No token found, user is not logged in');
     }
+    this.chatHub.onMessageReceived((message: MessageDTO) => {
+      const existingMessages = this.messagesMap.get(message.conversationId) || [];
+
+      existingMessages.push(message);
+
+      this.messagesMap.set(message.conversationId, existingMessages);
+    });
+    this.chatHub.onConversationCreate((data: ConversationUpdate) => {
+      console.log('ConversationCreate:', data);
+
+      this.conversations.push({
+        id: data.conversationId,
+      } as ConversationDTO);
+      this.chatHub.joinConversation(data.conversationId);
+      this.messagesMap.set(data.conversationId, []);
+    });
+    this.chatHub.onConversationDelete((data: { conversationId: string }) => {
+      console.log('ConversationDelete:', data.conversationId);
+      this.conversations = this.conversations.filter((c) => c.id !== data.conversationId);
+      this.messagesMap.delete(data.conversationId);
+    });
   }
 
   Login(username: string, password: string) {
@@ -53,7 +87,6 @@ export class App implements OnInit {
       },
     });
   }
-
   Register(username: string, password: string) {
     this.apiService.register(username, password).subscribe({
       next: (response: any) => {
@@ -67,6 +100,11 @@ export class App implements OnInit {
       },
     });
   }
+  Logout() {
+    localStorage.removeItem('auth_token');
+    this.signedIn = false;
+    this.conversations = [];
+  }
 
   DeleteConversation(id: string) {
     this.apiService.deleteConversation(id).subscribe({
@@ -75,14 +113,10 @@ export class App implements OnInit {
   }
   LeaveConversation(id: string) {
     this.apiService.leaveConversation(id).subscribe({
-      next: () => {},
+      next: () => {
+        this.conversations = this.conversations.filter((c) => c.id !== id);
+      },
     });
-  }
-
-  Logout() {
-    localStorage.removeItem('auth_token');
-    this.signedIn = false;
-    this.conversations = [];
   }
 
   private loadConversations() {
@@ -91,6 +125,9 @@ export class App implements OnInit {
         console.log('Conversations loaded: ', data);
         this.conversations = data;
         this.loadAllMessages(this.conversations);
+        this.conversations.forEach((convo) => {
+          this.chatHub.joinConversation(convo.id);
+        });
       },
       error: (error) => {
         console.error('Failed to load conversations: ', error);
@@ -98,7 +135,6 @@ export class App implements OnInit {
       },
     });
   }
-
   loadAllMessages(conversations: ConversationDTO[]) {
     const requests = conversations.map((convo) =>
       this.apiService
@@ -111,7 +147,6 @@ export class App implements OnInit {
   CreateMessage(convoId: string, message: string) {
     this.apiService.createMessage(convoId, message).subscribe();
   }
-
   CreateConversation(targetUserId: string) {
     this.apiService.createConversation(targetUserId).subscribe({
       next: (conversationId: string) => {

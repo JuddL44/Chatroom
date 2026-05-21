@@ -34,11 +34,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             OnMessageReceived = context =>
             {
                 var accessToken = context.Request.Query["access_token"];
-                if (!string.IsNullOrEmpty(accessToken))
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chat"))
                 {
                     context.Token = accessToken;
                 }
-                return Task.CompletedTask;
+
+            return Task.CompletedTask;
             }
         };
     });
@@ -56,6 +58,6 @@ var app = builder.Build();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapHub<ChatHub>("/chat");
 app.MapControllers();
+app.MapHub<ChatHub>("/chat");
 app.Run();

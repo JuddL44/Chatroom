@@ -1,15 +1,17 @@
 using MediatR;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 public class CreateConversationHandler : IRequestHandler<CreateConversationCommand, Guid>
 {
     private readonly AppDbContext _context;
-
-    public CreateConversationHandler(AppDbContext context)
+    private readonly IHubContext<ChatHub> _hub;
+    public CreateConversationHandler(AppDbContext context, IHubContext<ChatHub> hub)
     {
         _context = context;
+        _hub = hub;
     }
 
     public async Task<Guid> Handle(CreateConversationCommand req, CancellationToken ct)
@@ -37,6 +39,13 @@ public class CreateConversationHandler : IRequestHandler<CreateConversationComma
         });
 
         await _context.SaveChangesAsync(ct);
+        await _hub.Clients
+            .Users(req.CreatorId.ToString(), addedParticipant.Id.ToString())
+    .SendAsync("ConversationUpdate", new
+    {
+        conversationId = conversation.Id,
+        type = "created"
+    });
         return conversation.Id;
 
     }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\lasat\\OneDrive\\Desktop\\Projects\\Chatroom\\chatroomAPI\\ChatroomAPI.csproj": {}
+    "C:\\Users\\lasat\\OneDrive\\Desktop\\Projects\\Chatroom\\ChatroomAPI\\ChatroomAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\lasat\\OneDrive\\Desktop\\Projects\\Chatroom\\chatroomAPI\\ChatroomAPI.csproj": {
+    "C:\\Users\\lasat\\OneDrive\\Desktop\\Projects\\Chatroom\\ChatroomAPI\\ChatroomAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\lasat\\OneDrive\\Desktop\\Projects\\Chatroom\\chatroomAPI\\ChatroomAPI.csproj",
+        "projectUniqueName": "C:\\Users\\lasat\\OneDrive\\Desktop\\Projects\\Chatroom\\ChatroomAPI\\ChatroomAPI.csproj",
         "projectName": "ChatroomAPI",
-        "projectPath": "C:\\Users\\lasat\\OneDrive\\Desktop\\Projects\\Chatroom\\chatroomAPI\\ChatroomAPI.csproj",
+        "projectPath": "C:\\Users\\lasat\\OneDrive\\Desktop\\Projects\\Chatroom\\ChatroomAPI\\ChatroomAPI.csproj",
         "packagesPath": "C:\\Users\\lasat\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\lasat\\OneDrive\\Desktop\\Projects\\Chatroom\\chatroomAPI\\obj\\",
+        "outputPath": "C:\\Users\\lasat\\OneDrive\\Desktop\\Projects\\Chatroom\\ChatroomAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -68,7 +68,7 @@
             },
             "Microsoft.AspNetCore.SignalR.Common": {
               "target": "Package",
-              "version": "[10.0.8, )"
+              "version": "[9.0.4, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",

@@ -13,7 +13,7 @@ public class GetConversationMessagesHandler : IRequestHandler<GetConversationMes
 
      public async Task<List<MessageDTO>> Handle(GetConversationMessagesQuery req, CancellationToken ct)
     {
-        var messages = await _context.Messages.Where(m => m.ConversationId == req.ConvoId).Select(m => new MessageDTO {Content = m.Content, SenderName= m.SenderName, SentAt = m.SentAt}).ToListAsync();
+        var messages = await _context.Messages.Where(m => m.ConversationId == req.ConvoId).Select(m => new MessageDTO {Content = m.Content, SenderName= m.SenderName, SentAt = m.SentAt, ConversationId = m.ConversationId}).ToListAsync();
         return messages;
     }
 }

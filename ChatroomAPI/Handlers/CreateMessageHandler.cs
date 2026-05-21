@@ -1,14 +1,16 @@
 using MediatR;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 public class CreateMessageHandler : IRequestHandler<CreateMessageCommand, Guid>
 {
     private readonly AppDbContext _context;
-
-    public CreateMessageHandler(AppDbContext context)
+    private readonly IHubContext<ChatHub> _hub;
+    public CreateMessageHandler(AppDbContext context, IHubContext<ChatHub> hub)
     {
+        _hub = hub;
         _context = context;
     }
 
@@ -28,6 +30,15 @@ public class CreateMessageHandler : IRequestHandler<CreateMessageCommand, Guid>
         };
         _context.Messages.Add(message);
         await _context.SaveChangesAsync(ct);
+        await _hub.Clients.Group(req.ConvoId.ToString()).SendAsync("ReceiveMessage", new
+        {
+            message.Id,
+            message.Content,
+            message.SenderId,
+            message.ConversationId,
+            message.SentAt,
+            message.SenderName
+        });
         return message.Id;
     }
 }
