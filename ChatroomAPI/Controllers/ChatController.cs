@@ -78,9 +78,13 @@ public class ChatController : ControllerBase
 
     [Authorize]
     [HttpPost("{convoId}/update")]
-    public async Task<IActionResult> UpdateConversation(Guid convoId, string name, string icon, string color)
+    public async Task<IActionResult> UpdateConversation(Guid convoId, [FromBody] UpdateConversationDto dto)
     {
-        await _mediator.Send(new UpdateConversationCommand(convoId, color, icon, name));
+         await _mediator.Send(new UpdateConversationCommand(
+        convoId,
+        dto.Color,
+        dto.Icon,
+        dto.Name));
         return Ok();
     }
 

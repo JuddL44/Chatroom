@@ -6,7 +6,7 @@
           type="text"
           required=""
           autocomplete="off"
-          (input)="LimitInput($event, 20, false, true, false, 3)"
+          (input)="LimitInput($event, 20, false, true, false, InputType.Conversation)"
           [(ngModel)]="conversationCreation"
         />
         <label for="name">Conversation Name</label>
@@ -16,7 +16,7 @@
           type="text"
           required=""
           autocomplete="off"
-          (input)="LimitInput($event, 15, true, false, true, 4)"
+          (input)="LimitInput($event, 15, true, false, true, InputType.Participant)"
           [(ngModel)]="participantCreation"
         />
         <label for="name">Participant</label>
@@ -54,6 +54,53 @@
     </div>
   </div>
 }
+@if (editingConversation) {
+  <div class="overlay">
+    <div class="box">
+      <div class="inputGroup">
+        <input
+          type="text"
+          required=""
+          autocomplete="off"
+          (input)="LimitInput($event, 20, false, true, false, InputType.Conversation)"
+          [(ngModel)]="conversationCreation"
+        />
+        <label for="name">Conversation Name</label>
+      </div>
+      <div class="multiselect">
+        <div class="title">Choose Icon</div>
+        @for (icon of icons; track $index) {
+          <div
+            class="item"
+            [ngClass]="{ selected: currentIcon === icon }"
+            (click)="currentIcon = icon"
+          >
+            {{ icon }}
+          </div>
+        }
+      </div>
+      <div class="multiselect">
+        <div class="title">Choose Color</div>
+        @for (color of colors; track $index) {
+          <div
+            class="item"
+            [ngClass]="{ selected: currentColor === color }"
+            (click)="currentColor = color"
+            [ngStyle]="{ background: color }"
+          ></div>
+        }
+      </div>
+      <button
+        (click)="
+          UpdateConversation(focusedConversation, conversationCreation, currentColor, currentIcon)
+        "
+      >
+        Update
+      </button>
+    </div>
+  </div>
+}
+
 @if (!signedIn) {
   <div class="overlay">
     <div class="header">Chatroom</div>
@@ -66,7 +113,7 @@
               <input
                 required=""
                 [(ngModel)]="usernameCreation"
-                (input)="LimitInput($event, 14, true, false, false, 0)"
+                (input)="LimitInput($event, 14, true, false, false, InputType.Username)"
                 name="username"
                 type="text"
               />
@@ -76,7 +123,7 @@
               <input
                 required=""
                 [(ngModel)]="passwordCreation"
-                (input)="LimitInput($event, 20, false, true, false, 1)"
+                (input)="LimitInput($event, 20, false, true, false, InputType.Password)"
                 name="password"
                 type="password"
               />
@@ -117,7 +164,7 @@
               required
               type="text"
               [(ngModel)]="usernameCreation"
-              (input)="LimitInput($event, 14, true, false, false, 0)"
+              (input)="LimitInput($event, 14, true, false, false, InputType.Username)"
             />
             <label>Username</label>
           </div>
@@ -127,7 +174,7 @@
               name=""
               type="text"
               [(ngModel)]="displayNameCreation"
-              (input)="LimitInput($event, 16, false, true, false, 2)"
+              (input)="LimitInput($event, 16, false, true, false, InputType.DisplayName)"
             />
             <label>Display Name</label>
           </div>
@@ -137,7 +184,7 @@
               name=""
               type="password"
               [(ngModel)]="passwordCreation"
-              (input)="LimitInput($event, 20, false, true, false, 1)"
+              (input)="LimitInput($event, 20, false, true, false, InputType.Password)"
             />
             <label>Password</label>
           </div>
@@ -163,12 +210,13 @@
       <div class="error">{{ errorMessage }}</div>
     }
   </div>
-} @else {
+}
+@if (signedIn) {
   <div class="page">
     <div class="topbar">
       <div class="conversationcontainer">
         @for (conversation of conversations; track conversation.id) {
-          <div class="conversation" (click)="FocusConversation(conversation.id)">
+          <div class="conversation" (click)="FocusConversation(conversation.id, conversation.name)">
             <div class="bubble" [ngStyle]="{ background: conversation.color }">
               <div class="icon">
                 {{ conversation.icon }}
@@ -179,12 +227,22 @@
         }
       </div>
       <div class="buttoncontainer">
-        <button class="add" (click)="creatingConversation = !creatingConversation">
+        <button
+          class="add"
+          (click)="creatingConversation = !creatingConversation; editingConversation = false"
+        >
           <div class="line line-h"></div>
           <div class="line line-v"></div>
         </button>
         @if (conversationAdmin) {
-          <button class="settings">
+          <button
+            class="settings"
+            (click)="
+              editingConversation = !editingConversation;
+              creatingConversation = false;
+              conversationCreation = focusedConversationName
+            "
+          >
             <div class="bar bar1"></div>
             <div class="bar bar2"></div>
           </button>
@@ -205,7 +263,7 @@
       <div class="chatInput">
         <input type="text" [(ngModel)]="messageCreation" placeholder="Type a message..." />
 
-        <button (click)="CreateMessage(currentFocusedConversation, messageCreation)">Send</button>
+        <button (click)="CreateMessage(focusedConversation, messageCreation)">Send</button>
       </div>
       <div class="sidecontainer">
         <div class="side">

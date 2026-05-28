@@ -74,10 +74,9 @@ export class ApiService {
   ): Observable<void> {
     const headers = this.getAuthHeaders();
 
-    return this.http.put<void>(
+    return this.http.post<void>(
       `${this.APIURL}/chat/${conversationId}/update`,
       {
-        conversationId,
         name,
         color,
         icon,

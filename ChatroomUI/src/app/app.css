@@ -1,3 +1,7 @@
+/*  ##################################
+            BASE PAGE
+################################### */
+
 .page {
   width: 100%;
   height: 100vh;
@@ -39,32 +43,52 @@
   opacity: 0.35;
   animation: floatGlow 18s ease-in-out infinite;
 }
-
 .overlay::before {
   background: #3a3642;
   top: -20%;
   left: -20%;
 }
-
 .overlay::after {
   background: #1f1d24;
   bottom: -25%;
   right: -25%;
   animation-delay: -9s;
 }
+.loading {
+  position: relative;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  letter-spacing: 5px;
+  z-index: 1;
+  animation: shift 1s ease-in-out infinite alternate;
 
-@keyframes floatGlow {
-  0% {
-    transform: translate(0, 0) scale(1);
+  &:before,
+  &:after {
+    display: block;
+    content: attr(data-glitch);
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.8;
   }
-  50% {
-    transform: translate(10%, -10%) scale(1.1);
+
+  &:before {
+    animation: loading 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+    color: #8b00ff;
+    z-index: -1;
   }
-  100% {
-    transform: translate(0, 0) scale(1);
+
+  &:after {
+    animation: loading 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
+    color: #00e571;
+    z-index: -2;
   }
 }
-
+/*  ##################################
+          UPPER NAVIGATION BAR
+################################### */
 .topbar {
   width: 100%;
   height: 6rem;
@@ -159,13 +183,119 @@
     }
   }
 }
+.add {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(129, 110, 216);
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0px 0px 0px 2px rgb(212, 209, 255);
+  position: relative;
 
+  .line {
+    position: absolute;
+    background-color: rgb(229, 229, 229);
+    border-radius: 2px;
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+    box-shadow: 0px 0px 5px white;
+  }
+
+  .line-h {
+    width: 50%;
+    height: 2px;
+    transform: translateY(0);
+  }
+
+  .line-v {
+    width: 2px;
+    height: 50%;
+    transform: translateX(0);
+  }
+
+  &:hover .line-h {
+    transform: rotate(0deg) scaleX(1.1);
+  }
+
+  &:hover .line-v {
+    transform: rotate(0deg) scaleY(1.1);
+  }
+
+  &:hover .line {
+    box-shadow: 0px 0px 8px white;
+    background-color: white;
+  }
+
+  &:active .line {
+    transform: scale(0.95);
+  }
+}
+/*  ##################################
+          MAIN SCREEN
+################################### */
 .mainspace {
   flex: 1;
   overflow-y: auto;
   background: #28262c;
 }
+.message {
+  width: 100%;
+  display: flex;
+  padding: 0.8rem 1rem;
+  box-sizing: border-box;
 
+  &.selfsent {
+    justify-content: flex-end;
+
+    .messagebox {
+      background: linear-gradient(135deg, #6d5dfc, #5b4ae0);
+      border-radius: 1.2rem 1.2rem 0.3rem 1.2rem;
+    }
+
+    .name {
+      text-align: right;
+    }
+  }
+
+  .messagebox {
+    max-width: 70%;
+    background: #1f1d24;
+    padding: 0.9rem 1rem 0.8rem 1rem;
+    border-radius: 1.2rem 1.2rem 1.2rem 0.3rem;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    transition: 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    .name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #8f7dff;
+      opacity: 0.9;
+    }
+
+    .text {
+      color: white;
+      font-size: 0.96rem;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+  }
+}
+/*  ##################################
+          LOWER NAVIGATION BAR
+################################### */
 .bottombar {
   width: 100%;
   height: auto;
@@ -238,7 +368,71 @@
     }
   }
 }
+.chatInput {
+  width: 100%;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  box-sizing: border-box;
+  background: #1a181e;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 
+  input {
+    flex: 1;
+    height: 3rem;
+    border: none;
+    outline: none;
+    border-radius: 1rem;
+    padding: 0 1rem;
+    font-size: 0.95rem;
+
+    background: #24212b;
+    color: white;
+
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    transition: 0.2s ease;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    &:focus {
+      background: #2b2733;
+      box-shadow:
+        inset 0 0 0 1px #6d5dfc,
+        0 0 12px rgba(109, 93, 252, 0.2);
+    }
+  }
+
+  button {
+    height: 3rem;
+    padding: 0 1.2rem;
+    border: none;
+    border-radius: 1rem;
+
+    background: linear-gradient(135deg, #6d5dfc, #5b4ae0);
+    color: white;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    transition: 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+/*  ##################################
+          MENU SCREENS
+################################### */
 .settings {
   width: 45px;
   height: 45px;
@@ -289,147 +483,6 @@
     transform: translateX(-4px);
   }
 }
-.add {
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgb(129, 110, 216);
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  box-shadow: 0px 0px 0px 2px rgb(212, 209, 255);
-  position: relative;
-
-  .line {
-    position: absolute;
-    background-color: rgb(229, 229, 229);
-    border-radius: 2px;
-    transition:
-      transform 0.3s ease,
-      box-shadow 0.3s ease;
-    box-shadow: 0px 0px 5px white;
-  }
-
-  .line-h {
-    width: 50%;
-    height: 2px;
-    transform: translateY(0);
-  }
-
-  .line-v {
-    width: 2px;
-    height: 50%;
-    transform: translateX(0);
-  }
-
-  &:hover .line-h {
-    transform: rotate(0deg) scaleX(1.1);
-  }
-
-  &:hover .line-v {
-    transform: rotate(0deg) scaleY(1.1);
-  }
-
-  &:hover .line {
-    box-shadow: 0px 0px 8px white;
-    background-color: white;
-  }
-
-  &:active .line {
-    transform: scale(0.95);
-  }
-}
-.loading {
-  position: relative;
-  font-size: 25px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #fff;
-  letter-spacing: 5px;
-  z-index: 1;
-  animation: shift 1s ease-in-out infinite alternate;
-
-  &:before,
-  &:after {
-    display: block;
-    content: attr(data-glitch);
-    position: absolute;
-    top: 0;
-    left: 0;
-    opacity: 0.8;
-  }
-
-  &:before {
-    animation: loading 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-    color: #8b00ff;
-    z-index: -1;
-  }
-
-  &:after {
-    animation: loading 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
-    color: #00e571;
-    z-index: -2;
-  }
-}
-
-@keyframes loading {
-  0% {
-    transform: translate(0);
-  }
-  20% {
-    transform: translate(-3px, 3px);
-  }
-  40% {
-    transform: translate(-3px, -3px);
-  }
-  60% {
-    transform: translate(3px, 3px);
-  }
-  80% {
-    transform: translate(3px, -3px);
-  }
-  to {
-    transform: translate(0);
-  }
-}
-
-@keyframes shift {
-  0%,
-  40%,
-  44%,
-  58%,
-  61%,
-  65%,
-  69%,
-  73%,
-  100% {
-    transform: skewX(0deg);
-  }
-  41% {
-    transform: skewX(10deg);
-  }
-  42% {
-    transform: skewX(-10deg);
-  }
-  59% {
-    transform: skewX(40deg) skewY(10deg);
-  }
-  60% {
-    transform: skewX(-40deg) skewY(-10deg);
-  }
-  63% {
-    transform: skewX(10deg) skewY(-5deg);
-  }
-  70% {
-    transform: skewX(-50deg) skewY(-20deg);
-  }
-  71% {
-    transform: skewX(10deg) skewY(-10deg);
-  }
-}
-
 .box {
   display: flex;
   flex-direction: column;
@@ -611,7 +664,6 @@
     transition: box-shadow 0.2s ease-in;
   }
 }
-
 .login-box {
   position: absolute;
   top: 50%;
@@ -625,120 +677,6 @@
   box-shadow: 0 15px 25px rgba(0, 0, 0, 0.6);
   border-radius: 10px;
 }
-
-.chatInput {
-  width: 100%;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  box-sizing: border-box;
-  background: #1a181e;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-
-  input {
-    flex: 1;
-    height: 3rem;
-    border: none;
-    outline: none;
-    border-radius: 1rem;
-    padding: 0 1rem;
-    font-size: 0.95rem;
-
-    background: #24212b;
-    color: white;
-
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-    transition: 0.2s ease;
-
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.35);
-    }
-
-    &:focus {
-      background: #2b2733;
-      box-shadow:
-        inset 0 0 0 1px #6d5dfc,
-        0 0 12px rgba(109, 93, 252, 0.2);
-    }
-  }
-
-  button {
-    height: 3rem;
-    padding: 0 1.2rem;
-    border: none;
-    border-radius: 1rem;
-
-    background: linear-gradient(135deg, #6d5dfc, #5b4ae0);
-    color: white;
-
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-
-    transition: 0.2s ease;
-
-    &:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.05);
-    }
-
-    &:active {
-      transform: scale(0.98);
-    }
-  }
-}
-
-.message {
-  width: 100%;
-  display: flex;
-  padding: 0.8rem 1rem;
-  box-sizing: border-box;
-
-  &.selfsent {
-    justify-content: flex-end;
-
-    .messagebox {
-      background: linear-gradient(135deg, #6d5dfc, #5b4ae0);
-      border-radius: 1.2rem 1.2rem 0.3rem 1.2rem;
-    }
-
-    .name {
-      text-align: right;
-    }
-  }
-
-  .messagebox {
-    max-width: 70%;
-    background: #1f1d24;
-    padding: 0.9rem 1rem 0.8rem 1rem;
-    border-radius: 1.2rem 1.2rem 1.2rem 0.3rem;
-    position: relative;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    transition: 0.2s ease;
-
-    &:hover {
-      transform: translateY(-1px);
-    }
-
-    .name {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #8f7dff;
-      opacity: 0.9;
-    }
-
-    .text {
-      color: white;
-      font-size: 0.96rem;
-      line-height: 1.4;
-      word-break: break-word;
-    }
-  }
-}
 .login-box p:first-child {
   margin: 0 0 30px;
   padding: 0;
@@ -748,11 +686,9 @@
   font-weight: bold;
   letter-spacing: 1px;
 }
-
 .login-box .user-box {
   position: relative;
 }
-
 .login-box .user-box input {
   width: 100%;
   padding: 10px 0;
@@ -764,7 +700,6 @@
   outline: none;
   background: transparent;
 }
-
 .login-box .user-box label {
   position: absolute;
   top: 0;
@@ -775,7 +710,6 @@
   pointer-events: none;
   transition: 0.5s;
 }
-
 .login-box .user-box input:focus ~ label,
 .login-box .user-box input:valid ~ label {
   top: -20px;
@@ -783,7 +717,6 @@
   color: #fff;
   font-size: 12px;
 }
-
 .login-box form a {
   position: relative;
   display: inline-block;
@@ -798,18 +731,15 @@
   margin-top: 40px;
   letter-spacing: 3px;
 }
-
 .login-box a:hover {
   background: #fff;
   color: #272727;
   border-radius: 5px;
 }
-
 .login-box a span {
   position: absolute;
   display: block;
 }
-
 .login-box a span:nth-child(1) {
   top: 0;
   left: -100%;
@@ -818,7 +748,114 @@
   background: linear-gradient(90deg, transparent, #fff);
   animation: btn-anim1 1.5s linear infinite;
 }
-
+.login-box a span:nth-child(2) {
+  top: -100%;
+  right: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, #fff);
+  animation: btn-anim2 1.5s linear infinite;
+  animation-delay: 0.375s;
+}
+.login-box a span:nth-child(3) {
+  bottom: 0;
+  right: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(270deg, transparent, #fff);
+  animation: btn-anim3 1.5s linear infinite;
+  animation-delay: 0.75s;
+}
+.login-box a span:nth-child(4) {
+  bottom: -100%;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(360deg, transparent, #fff);
+  animation: btn-anim4 1.5s linear infinite;
+  animation-delay: 1.125s;
+}
+.login-box p:last-child {
+  color: #aaa;
+  font-size: 14px;
+}
+.login-box a.a2 {
+  color: #fff;
+  text-decoration: none;
+}
+.login-box a.a2:hover {
+  background: transparent;
+  color: #aaa;
+  border-radius: 5px;
+}
+/*  ##################################
+          ANIMATIONS
+################################### */
+@keyframes floatGlow {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(10%, -10%) scale(1.1);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+@keyframes loading {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-3px, 3px);
+  }
+  40% {
+    transform: translate(-3px, -3px);
+  }
+  60% {
+    transform: translate(3px, 3px);
+  }
+  80% {
+    transform: translate(3px, -3px);
+  }
+  to {
+    transform: translate(0);
+  }
+}
+@keyframes shift {
+  0%,
+  40%,
+  44%,
+  58%,
+  61%,
+  65%,
+  69%,
+  73%,
+  100% {
+    transform: skewX(0deg);
+  }
+  41% {
+    transform: skewX(10deg);
+  }
+  42% {
+    transform: skewX(-10deg);
+  }
+  59% {
+    transform: skewX(40deg) skewY(10deg);
+  }
+  60% {
+    transform: skewX(-40deg) skewY(-10deg);
+  }
+  63% {
+    transform: skewX(10deg) skewY(-5deg);
+  }
+  70% {
+    transform: skewX(-50deg) skewY(-20deg);
+  }
+  71% {
+    transform: skewX(10deg) skewY(-10deg);
+  }
+}
 @keyframes btn-anim1 {
   0% {
     left: -100%;
@@ -829,17 +866,6 @@
     left: 100%;
   }
 }
-
-.login-box a span:nth-child(2) {
-  top: -100%;
-  right: 0;
-  width: 2px;
-  height: 100%;
-  background: linear-gradient(180deg, transparent, #fff);
-  animation: btn-anim2 1.5s linear infinite;
-  animation-delay: 0.375s;
-}
-
 @keyframes btn-anim2 {
   0% {
     top: -100%;
@@ -850,17 +876,6 @@
     top: 100%;
   }
 }
-
-.login-box a span:nth-child(3) {
-  bottom: 0;
-  right: -100%;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(270deg, transparent, #fff);
-  animation: btn-anim3 1.5s linear infinite;
-  animation-delay: 0.75s;
-}
-
 @keyframes btn-anim3 {
   0% {
     right: -100%;
@@ -871,17 +886,6 @@
     right: 100%;
   }
 }
-
-.login-box a span:nth-child(4) {
-  bottom: -100%;
-  left: 0;
-  width: 2px;
-  height: 100%;
-  background: linear-gradient(360deg, transparent, #fff);
-  animation: btn-anim4 1.5s linear infinite;
-  animation-delay: 1.125s;
-}
-
 @keyframes btn-anim4 {
   0% {
     bottom: -100%;
@@ -891,20 +895,4 @@
   100% {
     bottom: 100%;
   }
-}
-
-.login-box p:last-child {
-  color: #aaa;
-  font-size: 14px;
-}
-
-.login-box a.a2 {
-  color: #fff;
-  text-decoration: none;
-}
-
-.login-box a.a2:hover {
-  background: transparent;
-  color: #aaa;
-  border-radius: 5px;
 }

@@ -10,6 +10,7 @@ import { tap } from 'rxjs/operators';
 import { MessageDTO } from './Models/Message';
 import { ConversationUpdate } from './Models/ConversationUpdate';
 import { FormsModule } from '@angular/forms';
+import { InputType } from './Models/InputType';
 
 @Component({
   selector: 'app-root',
@@ -20,15 +21,22 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './app.css',
 })
 export class App implements OnInit {
+  InputType = InputType;
   protected readonly title = signal('ChatroomUI');
 
-  public createConvoTab: boolean = false;
-  public settingsTab: boolean = false;
+  // Html State Indicators
+  public creatingConversation: boolean = false;
+  public editingConversation: boolean = false;
+  public creatingAccount: boolean = false;
+  public loading: boolean = false;
+
+  // States
   public conversationAdmin: boolean = false;
   public signedIn: boolean = false;
-  public creatingAccount: boolean = false;
-  public creatingConversation: boolean = false;
-  public loading: boolean = false;
+
+  // Backend Saved Inputs
+  public focusedConversation: string = '';
+  public focusedConversationName: string = '';
   public errorMessage: string = '';
   public currentName: string = '';
   public currentIcon: string = '';
@@ -39,9 +47,11 @@ export class App implements OnInit {
   public conversationCreation: string = '';
   public participantCreation: string = '';
   public displayNameCreation: string = '';
-  public currentFocusedConversation: string = '';
+
+  // Storage
   public conversations: ConversationDTO[] = [];
   public focusedMessages: MessageDTO[] = [];
+  messagesMap = new Map<string, MessageDTO[]>();
   public icons: string[] = [
     '📖',
     '💯',
@@ -82,65 +92,45 @@ export class App implements OnInit {
     '#0013E8',
     '#F2B5D4',
   ];
-
-  messagesMap = new Map<string, MessageDTO[]>();
-
   constructor(
     private apiService: ApiService,
     private chatHub: ChatHubService,
   ) {}
 
-  onUsernameInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-
-    input.value = input.value
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '')
-      .slice(0, 14);
-
-    this.usernameCreation = input.value;
-  }
-  onSignInClick() {
-    this.creatingAccount = !this.creatingAccount;
-  }
+  // Input Checking Methods
   LimitInput(
     event: Event,
     chars: number,
     lowercase: boolean,
     specialCharacters: boolean,
     tag: boolean,
-    index: number,
+    type: InputType,
   ) {
     const input = event.target as HTMLInputElement;
-    input.value = input.value.slice(0, chars);
-    if (lowercase) {
-      input.value = input.value.toLowerCase();
-    }
-    if (!specialCharacters) {
-      input.value = input.value.replace(/[^a-z0-9]/g, '');
-    }
-    if (tag) {
-      input.value = '@' + input.value;
-    }
-    switch (index) {
-      case 0:
-        this.usernameCreation = input.value;
+    let value = input.value;
+    value = value.slice(0, chars);
+    value = lowercase ? value.toLowerCase() : value;
+    value = !specialCharacters ? value.replace(/[^a-z0-9]/g, '') : value;
+    value = tag ? '@' + value.replace(/^@+/, '') : value;
+    input.value = value;
+    switch (type) {
+      case InputType.Username:
+        this.usernameCreation = value;
         break;
-      case 1:
-        this.passwordCreation = input.value;
+      case InputType.Password:
+        this.passwordCreation = value;
         break;
-      case 2:
-        this.displayNameCreation = input.value;
+      case InputType.DisplayName:
+        this.displayNameCreation = value;
         break;
-      case 3:
-        this.conversationCreation = input.value;
+      case InputType.Conversation:
+        this.conversationCreation = value;
         break;
-      case 4:
-        this.participantCreation = input.value;
+      case InputType.Participant:
+        this.participantCreation = value;
         break;
     }
   }
-
   confirmContentLimitations(username: string, password: string): string {
     if (username.length <= 2) {
       return 'Username must be more than 3 characters!';
@@ -151,6 +141,7 @@ export class App implements OnInit {
     return '';
   }
 
+  // Lifecycle Logic
   async ngOnInit() {
     const token = localStorage.getItem('auth_token');
     if (token) {
@@ -195,6 +186,11 @@ export class App implements OnInit {
     });
   }
 
+  //
+  // API Calling Methods
+  //
+
+  // Users
   Login(username: string, password: string) {
     this.loading = true;
     this.apiService.login(username, password).subscribe({
@@ -240,9 +236,25 @@ export class App implements OnInit {
     this.conversations = [];
   }
 
-  FocusConversation(id: string) {
+  // Conversations
+
+  CreateConversation(targetUserId: string, color: string, icon: string, name: string) {
+    targetUserId = targetUserId.slice(1);
+    this.apiService.createConversation(targetUserId, color, icon, name).subscribe({
+      next: (conversationId: string) => {
+        console.log('Conversation created: ', conversationId);
+        this.loadConversations();
+      },
+      error: (error) => {
+        console.error('Failed to create conversation: ', error);
+        this.errorMessage = 'Could not create conversation';
+      },
+    });
+  }
+  FocusConversation(id: string, name: string) {
     const messages = this.messagesMap.get(id);
-    this.currentFocusedConversation = id;
+    this.focusedConversation = id;
+    this.focusedConversationName = name;
     this.conversationAdmin = false;
     this.apiService.getConversationAdmin(id).subscribe({
       next: (data: string) => {
@@ -260,11 +272,6 @@ export class App implements OnInit {
     if (!messages) return;
     this.focusedMessages = messages;
   }
-  DeleteConversation(id: string) {
-    this.apiService.deleteConversation(id).subscribe({
-      next: () => {},
-    });
-  }
   LeaveConversation(id: string) {
     this.apiService.leaveConversation(id).subscribe({
       next: () => {
@@ -272,8 +279,12 @@ export class App implements OnInit {
       },
     });
   }
-
-  private loadConversations() {
+  DeleteConversation(id: string) {
+    this.apiService.deleteConversation(id).subscribe({
+      next: () => {},
+    });
+  }
+  loadConversations() {
     this.apiService.getConversations().subscribe({
       next: (data: ConversationDTO[]) => {
         console.log('Conversations loaded: ', data);
@@ -289,33 +300,6 @@ export class App implements OnInit {
       },
     });
   }
-  loadAllMessages(conversations: ConversationDTO[]) {
-    const requests = conversations.map((convo) =>
-      this.apiService
-        .getMessages(convo.id)
-        .pipe(tap((messages) => this.messagesMap.set(convo.id, messages))),
-    );
-    forkJoin(requests).subscribe();
-  }
-
-  CreateMessage(convoId: string, message: string) {
-    this.messageCreation = '';
-    this.apiService.createMessage(convoId, message).subscribe();
-  }
-  CreateConversation(targetUserId: string, color: string, icon: string, name: string) {
-    targetUserId = targetUserId.slice(1);
-    this.apiService.createConversation(targetUserId, color, icon, name).subscribe({
-      next: (conversationId: string) => {
-        console.log('Conversation created: ', conversationId);
-        this.loadConversations();
-      },
-      error: (error) => {
-        console.error('Failed to create conversation: ', error);
-        this.errorMessage = 'Could not create conversation';
-      },
-    });
-  }
-
   UpdateConversation(convoId: string, name: string, color: string, icon: string) {
     this.apiService.updateConversation(convoId, name, color, icon).subscribe({
       next: () => {
@@ -326,5 +310,19 @@ export class App implements OnInit {
         this.errorMessage = 'Could not update conversation';
       },
     });
+  }
+
+  // Messages
+  CreateMessage(convoId: string, message: string) {
+    this.messageCreation = '';
+    this.apiService.createMessage(convoId, message).subscribe();
+  }
+  loadAllMessages(conversations: ConversationDTO[]) {
+    const requests = conversations.map((convo) =>
+      this.apiService
+        .getMessages(convo.id)
+        .pipe(tap((messages) => this.messagesMap.set(convo.id, messages))),
+    );
+    forkJoin(requests).subscribe();
   }
 }
