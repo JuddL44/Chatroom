@@ -1,40 +1,222 @@
-@if (signedIn) {
-  <h1>Hi you!</h1>
-  <h2>You are currently logged in.</h2>
-  <p></p>
-  <button (click)="Logout()">Log out</button>
-  <p></p>
-  <h3>Conversation Creator</h3>
-  <p></p>
-  <input #convoadd type="text" />
-  <p></p>
-  <button (click)="CreateConversation(convoadd.value)">Create Conversation</button>
-  <p></p>
-  @for (conversation of conversations; track conversation.id) {
-    <h1>{{ conversation.lastMessage }}</h1>
-    <h1>{{ conversation.lastSender }}</h1>
-    <h1>{{ conversation.id }}</h1>
-    <button (click)="LeaveConversation(conversation.id)">Leave Conversation</button>
-    <button (click)="DeleteConversation(conversation.id)">Delete Conversation</button>
-    <h1>Messages</h1>
-    @for (message of messagesMap.get(conversation.id); track $index) {
-      <h4>{{ message.senderName }}</h4>
-      <h5>{{ message.sentAt }}</h5>
-      <h6>{{ message.content }}</h6>
-      <p></p>
+@if (creatingConversation) {
+  <div class="overlay">
+    <div class="box">
+      <div class="inputGroup">
+        <input
+          type="text"
+          required=""
+          autocomplete="off"
+          (input)="LimitInput($event, 20, false, true, false, 3)"
+          [(ngModel)]="conversationCreation"
+        />
+        <label for="name">Conversation Name</label>
+      </div>
+      <div class="inputGroup">
+        <input
+          type="text"
+          required=""
+          autocomplete="off"
+          (input)="LimitInput($event, 15, true, false, true, 4)"
+          [(ngModel)]="participantCreation"
+        />
+        <label for="name">Participant</label>
+      </div>
+      <div class="multiselect">
+        <div class="title">Choose Icon</div>
+        @for (icon of icons; track $index) {
+          <div
+            class="item"
+            [ngClass]="{ selected: currentIcon === icon }"
+            (click)="currentIcon = icon"
+          >
+            {{ icon }}
+          </div>
+        }
+      </div>
+      <div class="multiselect">
+        <div class="title">Choose Color</div>
+        @for (color of colors; track $index) {
+          <div
+            class="item"
+            [ngClass]="{ selected: currentColor === color }"
+            (click)="currentColor = color"
+            [ngStyle]="{ background: color }"
+          ></div>
+        }
+      </div>
+      <button
+        (click)="
+          CreateConversation(participantCreation, currentColor, currentIcon, conversationCreation)
+        "
+      >
+        Create
+      </button>
+    </div>
+  </div>
+}
+@if (!signedIn) {
+  <div class="overlay">
+    <div class="header">Chatroom</div>
+    @if (!creatingAccount) {
+      <div class="login-box">
+        @if (!loading) {
+          <p>Login</p>
+          <form>
+            <div class="user-box">
+              <input
+                required=""
+                [(ngModel)]="usernameCreation"
+                (input)="LimitInput($event, 14, true, false, false, 0)"
+                name="username"
+                type="text"
+              />
+              <label>Username</label>
+            </div>
+            <div class="user-box">
+              <input
+                required=""
+                [(ngModel)]="passwordCreation"
+                (input)="LimitInput($event, 20, false, true, false, 1)"
+                name="password"
+                type="password"
+              />
+              <label>Password</label>
+            </div>
+            <a
+              href="#"
+              (click)="Login(usernameCreation, passwordCreation); $event.preventDefault()"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              Submit
+            </a>
+          </form>
+          <p>
+            Don't have an account?
+            <a class="a2" style="cursor: pointer" (click)="creatingAccount = !creatingAccount"
+              >Create one!</a
+            >
+          </p>
+        } @else {
+          <div class="center">
+            <div class="loader">
+              <div data-glitch="Loading..." class="loading">Loading...</div>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="error">{{ errorMessage }}</div>
+    } @else {
+      <div class="login-box">
+        <p>Create Account</p>
+        <form>
+          <div class="user-box">
+            <input
+              required
+              type="text"
+              [(ngModel)]="usernameCreation"
+              (input)="LimitInput($event, 14, true, false, false, 0)"
+            />
+            <label>Username</label>
+          </div>
+          <div class="user-box">
+            <input
+              required=""
+              name=""
+              type="text"
+              [(ngModel)]="displayNameCreation"
+              (input)="LimitInput($event, 16, false, true, false, 2)"
+            />
+            <label>Display Name</label>
+          </div>
+          <div class="user-box">
+            <input
+              required=""
+              name=""
+              type="password"
+              [(ngModel)]="passwordCreation"
+              (input)="LimitInput($event, 20, false, true, false, 1)"
+            />
+            <label>Password</label>
+          </div>
+
+          <a
+            href="#"
+            (click)="Register(usernameCreation, passwordCreation); $event.preventDefault()"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            Submit
+          </a>
+        </form>
+        <p>
+          Have an account?
+          <a class="a2" style="cursor: pointer" (click)="creatingAccount = !creatingAccount"
+            >Sign in!</a
+          >
+        </p>
+      </div>
+      <div class="error">{{ errorMessage }}</div>
     }
-    <input #createmsg type="text" />
-    <button (click)="CreateMessage(conversation.id, createmsg.value)">Send Message</button>
-  }
+  </div>
 } @else {
-  <h1>Username</h1>
-  <input #username type="text" />
-  <p></p>
-  <h1>Password</h1>
-  <input #password type="text" />
-  <p></p>
-  <button (click)="Login(username.value, password.value)">Log In</button>
-  <div style="color: red">{{ errorMessage }}</div>
-  <p></p>
-  <button (click)="Register(username.value, password.value)">Register</button>
+  <div class="page">
+    <div class="topbar">
+      <div class="conversationcontainer">
+        @for (conversation of conversations; track conversation.id) {
+          <div class="conversation" (click)="FocusConversation(conversation.id)">
+            <div class="bubble" [ngStyle]="{ background: conversation.color }">
+              <div class="icon">
+                {{ conversation.icon }}
+              </div>
+            </div>
+            <div class="title">{{ conversation.name }}</div>
+          </div>
+        }
+      </div>
+      <div class="buttoncontainer">
+        <button class="add" (click)="creatingConversation = !creatingConversation">
+          <div class="line line-h"></div>
+          <div class="line line-v"></div>
+        </button>
+        @if (conversationAdmin) {
+          <button class="settings">
+            <div class="bar bar1"></div>
+            <div class="bar bar2"></div>
+          </button>
+        }
+      </div>
+    </div>
+    <div class="mainspace">
+      @for (message of focusedMessages; track $index) {
+        <div class="message" [ngClass]="{ selfsent: message.senderName === currentName }">
+          <div class="messagebox">
+            <div class="name">{{ message.senderName }}</div>
+            <div class="text">{{ message.content }}</div>
+          </div>
+        </div>
+      }
+    </div>
+    <div class="bottombar">
+      <div class="chatInput">
+        <input type="text" [(ngModel)]="messageCreation" placeholder="Type a message..." />
+
+        <button (click)="CreateMessage(currentFocusedConversation, messageCreation)">Send</button>
+      </div>
+      <div class="sidecontainer">
+        <div class="side">
+          <div class="content">@{{ currentName.toLowerCase() }}</div>
+          <button class="logout" (click)="Logout()">
+            <span class="shimmer"></span>
+            🚪 Log out
+          </button>
+        </div>
+        <div class="side"></div>
+      </div>
+    </div>
+  </div>
 }

@@ -34,6 +34,19 @@ public class AuthController : ControllerBase
         var token = await _mediator.Send(command);
         return Ok(new { token });
     }
+    [EnableCors("AllowFrontend")]
+    [Authorize]
+    [HttpGet("username")]
+    public async Task<string> Username()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        return "";
+
+        var query = new GetUsernameQuery(Guid.Parse(userId));
+        return await _mediator.Send(query);
+    }
 
 
     [Authorize]

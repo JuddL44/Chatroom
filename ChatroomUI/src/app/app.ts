@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ɵbypassSanitizationTrustScript } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -9,11 +9,12 @@ import { firstValueFrom, forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { MessageDTO } from './Models/Message';
 import { ConversationUpdate } from './Models/ConversationUpdate';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, HttpClientModule],
+  imports: [RouterOutlet, CommonModule, HttpClientModule, FormsModule],
   providers: [ApiService],
   templateUrl: './app.html',
   styleUrl: './app.css',
@@ -21,15 +22,134 @@ import { ConversationUpdate } from './Models/ConversationUpdate';
 export class App implements OnInit {
   protected readonly title = signal('ChatroomUI');
 
+  public createConvoTab: boolean = false;
+  public settingsTab: boolean = false;
+  public conversationAdmin: boolean = false;
   public signedIn: boolean = false;
+  public creatingAccount: boolean = false;
+  public creatingConversation: boolean = false;
+  public loading: boolean = false;
   public errorMessage: string = '';
+  public currentName: string = '';
+  public currentIcon: string = '';
+  public currentColor: string = '';
+  public usernameCreation: string = '';
+  public passwordCreation: string = '';
+  public messageCreation: string = '';
+  public conversationCreation: string = '';
+  public participantCreation: string = '';
+  public displayNameCreation: string = '';
+  public currentFocusedConversation: string = '';
   public conversations: ConversationDTO[] = [];
+  public focusedMessages: MessageDTO[] = [];
+  public icons: string[] = [
+    '📖',
+    '💯',
+    '🎮',
+    '🪜',
+    '🗿',
+    '⚒️',
+    '🍪',
+    '🌍',
+    '🔒',
+    '💎',
+    '🎁',
+    '⚓',
+    '🖋️',
+    '🎲',
+    '🍔',
+    '⛱️',
+    '🐸',
+    '🫂',
+    '💀',
+    '❤️‍🔥',
+    '🪼',
+    '🦋',
+    '🚕',
+    '🪙',
+  ];
+  public colors: string[] = [
+    '#FF312E',
+    '#35A7FF',
+    '#FADB12',
+    '#52AA5E',
+    '#E28151',
+    '#9565BB',
+    '#0B111D',
+    '#DFE5F1',
+    '#64686F',
+    '#594037',
+    '#0013E8',
+    '#F2B5D4',
+  ];
 
   messagesMap = new Map<string, MessageDTO[]>();
+
   constructor(
     private apiService: ApiService,
     private chatHub: ChatHubService,
   ) {}
+
+  onUsernameInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+
+    input.value = input.value
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .slice(0, 14);
+
+    this.usernameCreation = input.value;
+  }
+  onSignInClick() {
+    this.creatingAccount = !this.creatingAccount;
+  }
+  LimitInput(
+    event: Event,
+    chars: number,
+    lowercase: boolean,
+    specialCharacters: boolean,
+    tag: boolean,
+    index: number,
+  ) {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.slice(0, chars);
+    if (lowercase) {
+      input.value = input.value.toLowerCase();
+    }
+    if (!specialCharacters) {
+      input.value = input.value.replace(/[^a-z0-9]/g, '');
+    }
+    if (tag) {
+      input.value = '@' + input.value;
+    }
+    switch (index) {
+      case 0:
+        this.usernameCreation = input.value;
+        break;
+      case 1:
+        this.passwordCreation = input.value;
+        break;
+      case 2:
+        this.displayNameCreation = input.value;
+        break;
+      case 3:
+        this.conversationCreation = input.value;
+        break;
+      case 4:
+        this.participantCreation = input.value;
+        break;
+    }
+  }
+
+  confirmContentLimitations(username: string, password: string): string {
+    if (username.length <= 2) {
+      return 'Username must be more than 3 characters!';
+    }
+    if (password.length <= 6) {
+      return 'Password must be more than 6 characters!';
+    }
+    return '';
+  }
 
   async ngOnInit() {
     const token = localStorage.getItem('auth_token');
@@ -40,7 +160,6 @@ export class App implements OnInit {
         console.log('SignalR connected');
 
         this.signedIn = true;
-
         this.loadConversations();
       } catch (err) {
         console.error(err);
@@ -70,9 +189,14 @@ export class App implements OnInit {
       this.conversations = this.conversations.filter((c) => c.id !== data.conversationId);
       this.messagesMap.delete(data.conversationId);
     });
+    this.apiService.getUsername().subscribe((name) => {
+      this.currentName = name;
+      console.log(name);
+    });
   }
 
   Login(username: string, password: string) {
+    this.loading = true;
     this.apiService.login(username, password).subscribe({
       next: (response: any) => {
         localStorage.setItem('auth_token', response.token);
@@ -80,23 +204,33 @@ export class App implements OnInit {
         this.signedIn = true;
         this.loadConversations();
         this.errorMessage = '';
+        this.loading = false;
       },
       error: (error) => {
         console.error('Login failed: ', error);
         this.errorMessage = error.error.split('\n')[0] || 'Unknown error';
+        this.loading = false;
       },
     });
   }
   Register(username: string, password: string) {
+    var result = this.confirmContentLimitations(username, password);
+    if (result != '') {
+      this.errorMessage = result;
+      return;
+    }
+    this.loading = true;
     this.apiService.register(username, password).subscribe({
       next: (response: any) => {
         console.log('Registration successful: ', response);
         this.Login(username, password);
         this.errorMessage = '';
+        this.loading = false;
       },
       error: (error) => {
         console.error('Registration failed: ', error);
         this.errorMessage = error.error.split('\n')[0] || 'Unknown error';
+        this.loading = false;
       },
     });
   }
@@ -106,6 +240,26 @@ export class App implements OnInit {
     this.conversations = [];
   }
 
+  FocusConversation(id: string) {
+    const messages = this.messagesMap.get(id);
+    this.currentFocusedConversation = id;
+    this.conversationAdmin = false;
+    this.apiService.getConversationAdmin(id).subscribe({
+      next: (data: string) => {
+        console.log(data);
+
+        if (data === this.currentName) {
+          this.conversationAdmin = true;
+        }
+      },
+
+      error: (err) => {
+        console.error(err);
+      },
+    });
+    if (!messages) return;
+    this.focusedMessages = messages;
+  }
   DeleteConversation(id: string) {
     this.apiService.deleteConversation(id).subscribe({
       next: () => {},
@@ -145,10 +299,12 @@ export class App implements OnInit {
   }
 
   CreateMessage(convoId: string, message: string) {
+    this.messageCreation = '';
     this.apiService.createMessage(convoId, message).subscribe();
   }
-  CreateConversation(targetUserId: string) {
-    this.apiService.createConversation(targetUserId).subscribe({
+  CreateConversation(targetUserId: string, color: string, icon: string, name: string) {
+    targetUserId = targetUserId.slice(1);
+    this.apiService.createConversation(targetUserId, color, icon, name).subscribe({
       next: (conversationId: string) => {
         console.log('Conversation created: ', conversationId);
         this.loadConversations();
@@ -156,6 +312,18 @@ export class App implements OnInit {
       error: (error) => {
         console.error('Failed to create conversation: ', error);
         this.errorMessage = 'Could not create conversation';
+      },
+    });
+  }
+
+  UpdateConversation(convoId: string, name: string, color: string, icon: string) {
+    this.apiService.updateConversation(convoId, name, color, icon).subscribe({
+      next: () => {
+        console.log('Conversation updated');
+      },
+      error: (error) => {
+        console.error('Failed to update conversation: ', error);
+        this.errorMessage = 'Could not update conversation';
       },
     });
   }

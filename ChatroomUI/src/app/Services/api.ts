@@ -46,13 +46,50 @@ export class ApiService {
     });
   }
 
-  createConversation(targetUsername: string): Observable<string> {
+  getConversationAdmin(convoId: string): Observable<string> {
+    return this.http.get(`${this.APIURL}/chat/${convoId}/admin`, {
+      responseType: 'text',
+    });
+  }
+
+  createConversation(
+    targetUsername: string,
+    color: string,
+    icon: string,
+    name: string,
+  ): Observable<string> {
     const headers = this.getAuthHeaders();
     return this.http.post<string>(
       `${this.APIURL}/chat/conversation`,
-      { targetUsername },
+      { targetUsername, color, icon, name },
       { headers },
     );
+  }
+
+  updateConversation(
+    conversationId: string,
+    name: string,
+    color: string,
+    icon: string,
+  ): Observable<void> {
+    const headers = this.getAuthHeaders();
+
+    return this.http.put<void>(
+      `${this.APIURL}/chat/${conversationId}/update`,
+      {
+        conversationId,
+        name,
+        color,
+        icon,
+      },
+      { headers },
+    );
+  }
+
+  getUsername(): Observable<string> {
+    return this.http.get<string>(`${this.APIURL}/auth/username`, {
+      responseType: 'text' as 'json',
+    });
   }
 
   createMessage(convoId: string, message: string): Observable<string> {

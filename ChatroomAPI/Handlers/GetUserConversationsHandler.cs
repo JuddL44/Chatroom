@@ -12,12 +12,19 @@ public class GetUserConversationsHandler : IRequestHandler<GetUserConversationsQ
 
      public async Task<List<ConversationDTO>> Handle(GetUserConversationsQuery req, CancellationToken ct)
     {
-        var conversations = await _context.ConversationParticipants
-            .Where(x => x.UserId == req.UserId)
-            .Select(x => new ConversationDTO
-            {
-                Id = x.Conversationid
-            }).ToListAsync(ct);
+            var conversations = await (
+        from cp in _context.ConversationParticipants
+        join c in _context.Conversations
+            on cp.Conversationid equals c.Id
+        where cp.UserId == req.UserId
+        select new ConversationDTO
+        {
+            Id = c.Id,
+            Color = c.Color,
+            Icon = c.Icon,
+            Name = c.Name
+        }
+    ).ToListAsync(ct);
 
         return conversations;
     }

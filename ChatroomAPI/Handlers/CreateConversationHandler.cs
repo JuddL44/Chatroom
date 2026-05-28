@@ -19,7 +19,10 @@ public class CreateConversationHandler : IRequestHandler<CreateConversationComma
         var conversation = new Conversation
         {
             Id = Guid.NewGuid(),
-            AdminId = req.CreatorId
+            AdminId = req.CreatorId,
+            Color = req.Color,
+            Icon = req.Icon,
+            Name = req.Name
         };
 
         _context.Conversations.Add(conversation);

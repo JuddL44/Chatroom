@@ -29,6 +29,14 @@ public class ChatController : ControllerBase
     }
 
     [Authorize]
+    [HttpGet("{convoId}/admin")]
+    public async Task<IActionResult> GetConversationAdmin(Guid convoId)
+    {
+        var result = await _mediator.Send(new GetConversationAdminQuery(convoId));
+        return Ok(result);
+    }
+
+    [Authorize]
     [HttpPost("conversation")]
     public async Task<IActionResult> CreateConversation(CreateConversationCommand command)
     {
@@ -66,6 +74,14 @@ public class ChatController : ControllerBase
         Guid userGuid = new Guid(userId!);
         var result = await _mediator.Send(new CreateMessageCommand(userGuid, convoId, request.Message, false));
         return Ok(result);
+    }
+
+    [Authorize]
+    [HttpPost("{convoId}/update")]
+    public async Task<IActionResult> UpdateConversation(Guid convoId, string name, string icon, string color)
+    {
+        await _mediator.Send(new UpdateConversationCommand(convoId, color, icon, name));
+        return Ok();
     }
 
     [Authorize]
